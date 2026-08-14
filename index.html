@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задачи</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="header-left">
+                <svg class="icon home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                    <path d="M9 21V12h6v9"/>
+                </svg>
+                <h1>Задачи</h1>
+            </div>
+        </header>
+
+        <!-- Список задач -->
+        <main class="tasks">
+            <!-- Активные задачи -->
+            <ul class="task-list" id="active-list">
+                <li class="task">
+                    <label class="task-label">
+                        <input type="checkbox" class="task-checkbox">
+                        <span class="custom-checkbox"></span>
+                        <span class="task-text">Статья</span>
+                    </label>
+                </li>
+
+                <li class="task">
+                    <label class="task-label">
+                        <input type="checkbox" class="task-checkbox">
+                        <span class="custom-checkbox"></span>
+                        <span class="task-text">использованием и без цепочечной DMA</span>
+                    </label>
+                </li>
+            </ul>
+
+            <!-- Завершённые -->
+            <div class="completed-section">
+                <button class="completed-toggle" id="completed-toggle">
+                    <span>Завершенные</span>
+                    <span class="count" id="completed-count">0</span>
+                </button>
+
+                <ul class="task-list completed-list" id="completed-list" hidden>
+                    <!-- Сюда будут попадать завершённые задачи -->
+                </ul>
+            </div>
+        </main>
+
+        <!-- Поле ввода -->
+        <footer class="footer">
+            <div class="add-form" id="add-form" hidden>
+                <input type="text" id="new-task-input" placeholder="Новая задача..." autocomplete="off">
+                <div class="add-form-actions">
+                    <button class="cancel-btn" id="cancel-btn">Отмена</button>
+                    <button class="confirm-btn" id="confirm-btn">Добавить</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

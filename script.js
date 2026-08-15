@@ -8,12 +8,12 @@ const listTasks = document.getElementById('active-list');
 let id_task = 1
 let task = {};
 
-let allTasks = true;
-let activeTasks = false;
-let completedTasks = false;
+let allTasksBut = true;
+let activeTasksBut = false;
+let completedTasksBut = false;
 
 
-tasks = [
+let tasks = [
     {
         id: 0,
         title: "Первая задача",
@@ -41,14 +41,15 @@ function addTask() {
 
 function menuTasks() {
     activeList.innerHTML = '';
-    
-    if (allTasks){
+    let activeTasks = [];
+
+    if (allTasksBut){
         activeTasks = tasks;
     } 
-    else if (activeTasks){
+    else if (activeTasksBut){
         activeTasks = tasks.filter(item => item.isDone === false);
     } 
-    else if (completedTasks){
+    else if (completedTasksBut){
         activeTasks = tasks.filter(item => item.isDone === true); 
     }
     
@@ -61,6 +62,12 @@ function menuTasks() {
                     <span class="custom-checkbox"></span>
                     <span class="task-text">${item.title}</span>
                 </label>
+
+                <button class="delete-btn" id="${item.id}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
             </li>
         `);
     });
@@ -78,23 +85,33 @@ cancelBtn.addEventListener('click', function () {
 });
 
 document.getElementById('all').addEventListener('click', function () {
-    allTasks = true;
-    activeTasks = false;
-    completedTasks = false;
+    allTasksBut = true;
+    activeTasksBut = false;
+    completedTasksBut = false;
     menuTasks();
 });
 
 document.getElementById('active').addEventListener('click', function () {
-    allTasks = false;
-    activeTasks = true;
-    completedTasks = false;      
+    allTasksBut = false;
+    activeTasksBut = true;
+    completedTasksBut = false;      
     menuTasks();
 });
 
 document.getElementById('completed').addEventListener('click', function () {
-    allTasks = false;
-    activeTasks = false;
-    completedTasks = true;    
+    allTasksBut = false;
+    activeTasksBut = false;
+    completedTasksBut = true;    
     menuTasks();
 });
 
+document.getElementById('delete-all-btn').addEventListener('click', function () {
+    tasks = [];
+    menuTasks();
+});
+
+activeList.addEventListener('click', (e) => {
+    const idValue = e.target.closest('.delete-btn');
+    tasks = tasks.splice(idValue, 1);
+    menuTasks();
+});

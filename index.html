@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задачи</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+
+        <!-- ========== Шапка ========== -->
+        <header class="header">
+            <div class="header-left">
+                <svg class="icon home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                    <path d="M9 21V12h6v9"/>
+                </svg>
+                <h1>Задачи</h1>
+            </div>
+
+            <div class="header-actions">
+                <!-- 3. Выделить все задачи -->
+                <button class="header-btn" id="select-all-btn" title="Выделить все">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <span>Выделить все</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ========== Вкладки ========== -->
+        <nav class="tabs" id="tabs">
+            <button class="tab" data-filter="all" id="all">Все</button>
+            <button class="tab" data-filter="active" id="active">Невыполненные</button>
+            <button class="tab" data-filter="completed" id="completed">Выполненные</button>
+        </nav>
+
+        <!-- ========== Панель действий ========== -->
+        <div class="actions-bar">
+            <button class="action-btn" id="delete-completed-btn">
+                Удалить выполненные
+            </button>
+            <button class="action-btn danger" id="delete-all-btn">
+                Удалить все
+            </button>
+        </div>
+
+        <!-- ========== Список задач ========== -->
+        <main class="tasks">
+            <ul class="task-list" id="active-list">
+                <!-- Задачи будут рендериться через JS -->
+            </ul>
+
+            <!-- Пустое состояние -->
+            <div class="empty-state" id="empty-state" hidden>
+                Нет задач
+            </div>
+        </main>
+
+        <!-- ========== Пагинация ========== -->
+        <div class="pagination" id="pagination">
+            <button class="page-btn" id="prev-page" disabled>‹</button>
+            <div class="page-numbers" id="page-numbers">
+                <!-- номера страниц через JS -->
+            </div>
+            <button class="page-btn" id="next-page">›</button>
+        </div>
+
+        <!-- ========== Форма добавления ========== -->
+        <footer class="footer">
+            <div class="add-form" id="add-form">
+                <input type="text" id="new-task-input" placeholder="Новая задача..." autocomplete="off">
+                <div class="add-form-actions">
+                    <button class="cancel-btn" id="cancel-btn">Очистить</button>
+                    <button class="confirm-btn" id="confirm-btn">Добавить</button>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

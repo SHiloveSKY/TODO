@@ -115,3 +115,20 @@ activeList.addEventListener('click', (e) => {
     tasks = tasks.splice(idValue, 1);
     menuTasks();
 });
+
+async function pagination(){
+    let currentPage = 1;
+    let rows = 5;
+    function displayList(arrDate, rowPerPage, page){
+        const postsEl = document.querySelector('.tasks');
+
+        const start = rowPerPage * page;
+        const end = start * rowPerPage;
+        const paginatiedDate = arrDate.splice(start, end);
+
+        paginatiedDate.forEach((el) =>{
+            
+        })
+    }
+
+}

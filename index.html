@@ -82,6 +82,23 @@
 
     </div>
 
+<!-- Модальное окно -->
+<div class="modal-overlay" id="edit-modal" hidden>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Редактировать задачу</h3>
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="edit-task-input" placeholder="Введите новый текст..." autocomplete="off">
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-btn" id="modal-cancel-btn">Отмена</button>
+            <button class="confirm-btn" id="modal-save-btn">Сохранить</button>
+        </div>
+    </div>
+</div>
+
     <script src="script.js"></script>
 </body>
 </html>

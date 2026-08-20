@@ -8,68 +8,49 @@ const nextPageBtn = document.getElementById('next-page');
 const pageNumbers = document.getElementById('page-numbers');
 const emptyState = document.getElementById('empty-state');
 
+// Модальное окно
+const editModal = document.getElementById('edit-modal');
+const editInput = document.getElementById('edit-task-input');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const modalSaveBtn = document.getElementById('modal-save-btn');
+
 let id_task = 1;
-let task = {};
 let allTasksBut = true;
 let activeTasksBut = false;
 let completedTasksBut = false;
-let currentPage = 1;
-let tasks = [];
-const rowsPerPage = 5;
 
-function addTask() {
-    if(newTaskInput.value.trim() == "") {
-        return;
-    }
-    id_task++;
-    tasks.push({
-        id: id_task,
-        title: newTaskInput.value.trim(),
-        isDone: false
-    });
-    newTaskInput.value = '';
-    menuTasks();
-}
+let tasks = [];
+
+let currentPage = 1;
+const rowsPerPage = 5;
+let totalPages = 1;
+let editingTaskId = null;
+
+let clickTimer = null;
+
 
 function getFilteredTasks() {
-    if (allTasksBut) {
-        return tasks;
-    } else if (activeTasksBut) {
-        return tasks.filter(item => item.isDone === false);
-    } else if (completedTasksBut) {
-        return tasks.filter(item => item.isDone === true);
-    }
+    if (allTasksBut) return tasks;
+    if (activeTasksBut) return tasks.filter(item => !item.isDone);
+    if (completedTasksBut) return tasks.filter(item => item.isDone);
     return tasks;
 }
 
-function getPaginatedTasks(filteredTasks) {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return filteredTasks.slice(startIndex, endIndex);
-}
-
 function renderTasks() {
-    const filteredTasks = getFilteredTasks();
-    const paginatedTasks = getPaginatedTasks(filteredTasks);
-    const totalPages = Math.max(1, Math.ceil(filteredTasks.length / rowsPerPage));
-    
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-        renderTasks();
-        return;
-    }
-    
+    const filtered = getFilteredTasks();
+    totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const paginated = filtered.slice(start, start + rowsPerPage);
+
     activeList.innerHTML = '';
-    
-    if (paginatedTasks.length === 0) {
-        emptyState.hidden = false;
-    } else {
-        emptyState.hidden = true;
-    }
-    
-    paginatedTasks.forEach(item => {
-        listTasks.insertAdjacentHTML('beforeend', `
-            <li class="task">
+    emptyState.hidden = paginated.length > 0;
+
+    paginated.forEach(item => {
+        activeList.insertAdjacentHTML('beforeend', `
+            <li class="task" data-id="${item.id}">
                 <label class="task-label" id="task-label${item.id}">
                     <input type="checkbox" class="task-checkbox" ${item.isDone ? 'checked' : ''}>
                     <span class="custom-checkbox"></span>
@@ -83,173 +64,199 @@ function renderTasks() {
             </li>
         `);
     });
-    
-    updatePagination(filteredTasks.length, totalPages);
+
+    updatePaginationControls(filtered.length);
 }
 
-function updatePagination(totalItems, totalPages) {
+function updatePaginationControls(totalItems) {
     prevPageBtn.disabled = currentPage === 1;
     nextPageBtn.disabled = currentPage === totalPages || totalItems === 0;
-    
     pageNumbers.innerHTML = '';
-    
+
     if (totalItems === 0) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = 'page-number active';
-        pageBtn.textContent = '1';
-        pageBtn.disabled = true;
-        pageNumbers.appendChild(pageBtn);
+        const btn = document.createElement('button');
+        btn.className = 'page-number active';
+        btn.textContent = '1';
+        btn.disabled = true;
+        pageNumbers.appendChild(btn);
         return;
     }
-    
+
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
-    
     if (endPage - startPage < 4) {
-        if (startPage === 1) {
-            endPage = Math.min(5, totalPages);
-        } else if (endPage === totalPages) {
-            startPage = Math.max(1, totalPages - 4);
-        }
+        if (startPage === 1) endPage = Math.min(5, totalPages);
+        else if (endPage === totalPages) startPage = Math.max(1, totalPages - 4);
     }
-    
+
     if (startPage > 1) {
         addPageButton(1);
-        if (startPage > 2) {
-            addEllipsis();
-        }
+        if (startPage > 2) addEllipsis();
     }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        addPageButton(i);
-    }
-    
+    for (let i = startPage; i <= endPage; i++) addPageButton(i);
     if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-            addEllipsis();
-        }
+        if (endPage < totalPages - 1) addEllipsis();
         addPageButton(totalPages);
     }
 }
 
 function addPageButton(pageNum) {
-    const pageBtn = document.createElement('button');
-    pageBtn.className = `page-number ${pageNum === currentPage ? 'active' : ''}`;
-    pageBtn.textContent = pageNum;
-    pageBtn.addEventListener('click', () => {
+    const btn = document.createElement('button');
+    btn.className = `page-number ${pageNum === currentPage ? 'active' : ''}`;
+    btn.textContent = pageNum;
+    btn.addEventListener('click', () => {
         currentPage = pageNum;
         renderTasks();
     });
-    pageNumbers.appendChild(pageBtn);
+    pageNumbers.appendChild(btn);
 }
 
 function addEllipsis() {
-    const ellipsis = document.createElement('span');
-    ellipsis.textContent = '…';
-    ellipsis.style.color = 'var(--text-muted)';
-    ellipsis.style.padding = '0 4px';
-    pageNumbers.appendChild(ellipsis);
+    const span = document.createElement('span');
+    span.textContent = '…';
+    span.style.color = 'var(--text-muted)';
+    span.style.padding = '0 4px';
+    pageNumbers.appendChild(span);
 }
 
 function menuTasks() {
-    currentPage = 1; 
+    currentPage = 1;
     renderTasks();
 }
 
-menuTasks();
+function openEditModal(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    editingTaskId = taskId;
+    editInput.value = task.title;
+    editModal.hidden = false;
+    editInput.focus();
+    editInput.select();
+}
 
-confirmBtn.addEventListener('click', function () {
-    addTask();
+function closeEditModal() {
+    editModal.hidden = true;
+    editingTaskId = null;
+    editInput.value = '';
+}
+
+function saveEditedTask() {
+    const newTitle = editInput.value.trim();
+    if (!newTitle) return;
+    const task = tasks.find(t => t.id === editingTaskId);
+    if (!task) return;
+    task.title = newTitle;
+    closeEditModal();
+    renderTasks();
+}
+
+confirmBtn.addEventListener('click', () => {
+    const val = newTaskInput.value.trim();
+    if (!val) return;
+    id_task++;
+    tasks.push({ id: id_task, title: val, isDone: false });
+    newTaskInput.value = '';
+    menuTasks();
 });
-
-newTaskInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        addTask();
-    }
+newTaskInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') confirmBtn.click();
 });
-
-cancelBtn.addEventListener('click', function () {
+cancelBtn.addEventListener('click', () => {
     newTaskInput.value = '';
 });
 
-document.getElementById('all').addEventListener('click', function () {
-    allTasksBut = true;
-    activeTasksBut = false;
-    completedTasksBut = false;
+// Вкладки
+document.getElementById('all').addEventListener('click', () => {
+    allTasksBut = true; activeTasksBut = false; completedTasksBut = false;
+    menuTasks();
+});
+document.getElementById('active').addEventListener('click', () => {
+    allTasksBut = false; activeTasksBut = true; completedTasksBut = false;
+    menuTasks();
+});
+document.getElementById('completed').addEventListener('click', () => {
+    allTasksBut = false; activeTasksBut = false; completedTasksBut = true;
     menuTasks();
 });
 
-document.getElementById('active').addEventListener('click', function () {
-    allTasksBut = false;
-    activeTasksBut = true;
-    completedTasksBut = false;
-    menuTasks();
-});
-
-document.getElementById('completed').addEventListener('click', function () {
-    allTasksBut = false;
-    activeTasksBut = false;
-    completedTasksBut = true;
-    menuTasks();
-});
-
-document.getElementById('delete-all-btn').addEventListener('click', function () {
+document.getElementById('delete-all-btn').addEventListener('click', () => {
     tasks = [];
     menuTasks();
 });
-
-document.getElementById('delete-completed-btn').addEventListener('click', function () {
-    tasks = tasks.filter(task => !task.isDone);
+document.getElementById('delete-completed-btn').addEventListener('click', () => {
+    tasks = tasks.filter(t => !t.isDone);
     menuTasks();
 });
 
-prevPageBtn.addEventListener('click', function () {
-    if (currentPage > 1) {
-        currentPage--;
-        renderTasks();
-    }
+prevPageBtn.addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; renderTasks(); }
+});
+nextPageBtn.addEventListener('click', () => {
+    const filtered = getFilteredTasks();
+    const total = Math.ceil(filtered.length / rowsPerPage);
+    if (currentPage < total) { currentPage++; renderTasks(); }
 });
 
-nextPageBtn.addEventListener('click', function () {
-    const filteredTasks = getFilteredTasks();
-    const totalPages = Math.ceil(filteredTasks.length / rowsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        renderTasks();
-    }
+document.getElementById('select-all-btn').addEventListener('click', () => {
+    const filtered = getFilteredTasks();
+    const start = (currentPage - 1) * rowsPerPage;
+    const paginated = filtered.slice(start, start + rowsPerPage);
+    const allChecked = paginated.every(t => t.isDone);
+    paginated.forEach(t => t.isDone = !allChecked);
+    renderTasks();
 });
 
 activeList.addEventListener('click', (e) => {
     const deleteBtn = e.target.closest('.delete-btn');
     if (deleteBtn) {
         const taskId = parseInt(deleteBtn.id);
-        tasks = tasks.filter(task => task.id !== taskId);
+        tasks = tasks.filter(t => t.id !== taskId);
         menuTasks();
         return;
     }
-    
     const checkbox = e.target.closest('.task-checkbox');
     if (checkbox) {
-        const label = checkbox.closest('.task-label');
-        const taskId = parseInt(label.id.replace('task-label', ''));
-        const task = tasks.find(t => t.id === taskId);
-        if (task) {
-            task.isDone = checkbox.checked;
-
-            renderTasks();
+        if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            return; 
         }
+        clickTimer = setTimeout(() => {
+            clickTimer = null;
+            const label = checkbox.closest('.task-label');
+            const taskId = parseInt(label.id.replace('task-label', ''));
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.isDone = checkbox.checked;
+                renderTasks();
+            }
+        }, 200);
     }
 });
 
-
-document.getElementById('select-all-btn').addEventListener('click', function () {
-    const filteredTasks = getFilteredTasks();
-    const paginatedTasks = getPaginatedTasks(filteredTasks);
-    const allChecked = paginatedTasks.every(task => task.isDone);
-    
-    paginatedTasks.forEach(task => {
-        task.isDone = !allChecked;
-    });
-    
-    renderTasks();
+activeList.addEventListener('dblclick', (e) => {
+    if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+    }
+    const taskElement = e.target.closest('.task');
+    if (!taskElement) return;
+    e.preventDefault(); 
+    const taskId = parseInt(taskElement.dataset.id);
+    openEditModal(taskId);
 });
+
+modalCloseBtn.addEventListener('click', closeEditModal);
+modalCancelBtn.addEventListener('click', closeEditModal);
+modalSaveBtn.addEventListener('click', saveEditedTask);
+editInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') saveEditedTask();
+});
+editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) closeEditModal();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !editModal.hidden) closeEditModal();
+});
+
+menuTasks();
